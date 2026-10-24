@@ -2,14 +2,15 @@
 
 Run from the project root:  streamlit run GUI/gui_main.py
 """
+import base64
+import hashlib
+import io
 import random
 import sys
 import time
+from html import escape
 from datetime import datetime
 from pathlib import Path
-
-import database_aihack as db
-from login_page import render_login
 
 import streamlit as st
 from PIL import Image, ImageOps
@@ -22,6 +23,10 @@ sys.path.insert(0, str(ROOT))  # so we can import run.py from the project root
 
 import run  # the model, preprocessing and prediction all come from run.py
 from run import CLASSES, IMG_SIZE, MODEL_PATH, device
+
+# These need the project root on the path too (database_aihack.py lives there)
+import database_aihack as db
+from login_page import logout, render_login
 
 DATA_DIR = ROOT / "data"
 MIN_LOADING_SECONDS = 1.2  # keep the loading state visible long enough to notice
@@ -427,7 +432,46 @@ html, body, .stApp, .stApp p, .stApp span, .stApp div, .stApp button, .stApp li 
 .ntc-side-foot hr { width: 2.2rem; border: 0; height: 2px; background: var(--pink); margin: 1.4rem 1.6rem 0.8rem; }
 .ntc-side-foot p { margin: 0 1.6rem; color: #d8cbe6; font-size: 0.92rem; line-height: 1.45; }
 
+/* ---------- user bar ---------- */
+.st-key-userbar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.45rem 0.9rem;
+  margin-bottom: 1.1rem;
+}
+.ntc-user { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 1rem; }
+.ntc-user b { color: #fff; font-weight: 700; }
+.ntc-avatar {
+  width: 2.1rem; height: 2.1rem; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; color: #2a0f38; background: linear-gradient(135deg, var(--pink-2), var(--pink));
+}
+.st-key-userbar .stButton button { color: var(--pink-2) !important; justify-content: flex-end; }
+
+/* ---------- past results ---------- */
+.ntc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 0.6rem 0 1.1rem; }
+.ntc-stats .ntc-card { padding: 1rem 1.2rem; }
+.ntc-stats small { display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem; }
+.ntc-stats strong { font-size: 1.6rem; font-weight: 600; color: #fff; }
+.ntc-hist { display: flex; flex-direction: column; gap: 0.9rem; }
+.ntc-hist-row { display: grid; grid-template-columns: 110px 190px 1fr; gap: 1.4rem; align-items: center; padding: 1rem 1.2rem; }
+.ntc-hist-img img, .ntc-hist-noimg { width: 110px; height: 110px; border-radius: 10px; object-fit: cover; display: block; }
+.ntc-hist-noimg { display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line-2); }
+.ntc-hist-date { font-size: 1.15rem; font-weight: 600; color: #fff; }
+.ntc-hist-time { color: var(--pink-2); font-size: 0.95rem; margin-bottom: 0.3rem; }
+.ntc-hist-name { font-size: 0.82rem; margin-bottom: 0.55rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ntc-badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.ntc-badge.benign { color: var(--pink-2); background: rgba(225, 92, 242, 0.15); border: 1px solid rgba(225, 92, 242, 0.45); }
+.ntc-badge.malignant { color: #fda4af; background: rgba(251, 113, 133, 0.14); border: 1px solid rgba(251, 113, 133, 0.5); }
+.ntc-hist-bar { display: grid; grid-template-columns: 5.5rem 1fr 3.8rem; gap: 0.9rem; align-items: center; margin: 0.45rem 0; }
+.ntc-hist-bar span { color: #fff; font-size: 0.95rem; }
+.ntc-hist-bar b { text-align: right; font-weight: 500; color: #fff; }
+
 @media (max-width: 900px) {
+  .ntc-stats { grid-template-columns: 1fr 1fr; }
+  .ntc-hist-row { grid-template-columns: 90px 1fr; }
+  .ntc-hist-img img, .ntc-hist-noimg { width: 90px; height: 90px; }
+  .ntc-hist-bars { grid-column: 1 / -1; }
   .ntc-grid.two, .ntc-cause { grid-template-columns: 1fr; }
   .ntc-vrule { display: none; }
   .ntc-head-side { align-items: flex-start; }
@@ -639,6 +683,105 @@ def zoom_dialog(image, name):
 
 
 # =============================================================================
+# Scan history (stored in the database, per user)
+# =============================================================================
+def save_scan(image, name, probs):
+    """Store a finished scan for the logged-in user. Returns the case ID."""
+    thumb = image.copy()
+    thumb.thumbnail((512, 512))  # re-encoding also strips EXIF/location data
+    buf = io.BytesIO()
+    thumb.save(buf, format="JPEG", quality=85)
+    top = max(range(len(probs)), key=lambda i: probs[i])
+    return db.save_lesion_case_and_prediction(
+        user_id=ss["user_id"],
+        lesion_tag=name or "Untitled scan",
+        anatomical_site="Not specified",
+        patient_age_bracket="Not specified",
+        evolving_flag=False,
+        bleeding_itching_flag=False,
+        clinical_notes="",
+        sanitized_image_bytes=buf.getvalue(),
+        image_sha256=hashlib.sha256(image.tobytes()).hexdigest(),
+        benign_prob=probs[0],
+        malignant_prob=probs[1],
+        threshold_used=0.5,
+        predicted_class=CLASSES[top],
+    )
+
+
+def load_history(user_id):
+    """All of a user's scans, newest first, with images decrypted."""
+    with db.get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT c.case_id, c.lesion_tag, c.created_at, c.encrypted_image_blob,
+                   p.benign_prob, p.malignant_prob, p.predicted_class
+            FROM lesion_cases c JOIN predictions p ON p.case_id = c.case_id
+            WHERE c.user_id = ?
+            ORDER BY c.created_at DESC
+            """,
+            (user_id,),
+        ).fetchall()
+    history = []
+    for r in rows:
+        img_uri = ""
+        if r["encrypted_image_blob"]:
+            try:
+                jpeg = db.cipher.decrypt(r["encrypted_image_blob"])
+                img_uri = "data:image/jpeg;base64," + base64.b64encode(jpeg).decode()
+            except Exception:
+                pass  # e.g. saved with a different encryption key
+        history.append({
+            "case_id": r["case_id"],
+            "name": r["lesion_tag"],
+            "when": datetime.fromisoformat(r["created_at"]).astimezone(),  # UTC -> local time
+            "img": img_uri,
+            "benign": r["benign_prob"],
+            "malignant": r["malignant_prob"],
+            "label": r["predicted_class"],
+        })
+    return history
+
+
+def history_row_html(h):
+    img = (f'<img src="{h["img"]}" alt="Scan image">' if h["img"]
+           else f'<div class="ntc-hist-noimg">{icon("image", 26, 1.4)}</div>')
+    bars = "".join(
+        f'<div class="ntc-hist-bar"><span>{cls.capitalize()}</span>'
+        f'<div class="ntc-track"><i class="{cls}" style="width:{h[cls] * 100:.1f}%"></i></div>'
+        f'<b>{h[cls]:.1%}</b></div>'
+        for cls in CLASSES
+    )
+    return f"""
+<div class="ntc-card ntc-hist-row">
+  <div class="ntc-hist-img">{img}</div>
+  <div class="ntc-hist-meta">
+    <div class="ntc-hist-date">{h["when"].strftime("%d %b %Y")}</div>
+    <div class="ntc-hist-time">{h["when"].strftime("%H:%M")}</div>
+    <div class="ntc-muted ntc-hist-name">{escape(h["name"])}</div>
+    <span class="ntc-badge {h["label"]}">{h["label"].capitalize()}</span>
+  </div>
+  <div class="ntc-hist-bars">{bars}</div>
+</div>"""
+
+
+def user_bar():
+    """Bar across the top of every page: who's signed in, plus a log-out button."""
+    username = ss.get("username", "")
+    with st.container(key="userbar"):
+        left, right = st.columns([5, 1], vertical_alignment="center")
+        left.html(
+            f'<div class="ntc-user"><span class="ntc-avatar">{escape(username[:1].upper())}</span>'
+            f'<span>Signed in as <b>{escape(username)}</b></span></div>'
+        )
+        if right.button("Log out", icon=":material/logout:", type="tertiary", width="stretch"):
+            # forget this user's on-screen state before signing out
+            for k in ("results", "example", "page"):
+                ss.pop(k, None)
+            logout()
+
+
+# =============================================================================
 # Pages
 # =============================================================================
 def page_analyse():
@@ -740,7 +883,40 @@ def page_analyse():
                     "seconds": seconds,
                     "when": datetime.now().strftime("%d %b %Y, %H:%M"),
                 }
+                try:
+                    save_scan(image, name, probs)  # shows up on the Past Results page
+                except Exception as e:
+                    st.warning(f"Result shown but not saved to your history: {e}")
             slot.html(results_html(ss.results[key]))
+
+
+def page_history():
+    st.html(page_header(
+        "Activity",
+        "Past <em>Results</em>",
+        "Every scan you've made, newest first.",
+    ))
+    history = load_history(ss["user_id"])
+    if not history:
+        st.html(f"""
+<div class="ntc-card ntc-loading" style="min-height:16rem">
+  <div class="ntc-orb">{icon("chart", 30, 1.5)}</div>
+  <strong>No scans yet</strong>
+  <span class="ntc-muted">Analyse an image and it will appear here.</span>
+</div>""")
+        return
+
+    n_mal = sum(h["label"] == "malignant" for h in history)
+    stats = [
+        ("Total scans", len(history)),
+        ("Benign", len(history) - n_mal),
+        ("Malignant", n_mal),
+        ("Last scan", history[0]["when"].strftime("%d %b, %H:%M")),
+    ]
+    st.html('<div class="ntc-stats">' + "".join(
+        f'<div class="ntc-card"><small>{k}</small><strong>{v}</strong></div>' for k, v in stats
+    ) + "</div>")
+    st.html('<div class="ntc-hist">' + "".join(history_row_html(h) for h in history) + "</div>")
 
 
 def page_about():
@@ -864,10 +1040,7 @@ def page_usage():
 db.init_db()
 
 # Configure Streamlit
-st.set_page_config(
-    page_title="NTC — NAH to Cancer",
-    page_icon="🔬"
-)
+st.set_page_config(page_title="NTC — NAH to Cancer", page_icon="🎗️", layout="wide")
 
 # Require login
 if not render_login():
@@ -876,14 +1049,9 @@ if not render_login():
 # Load main interface
 st.html(CSS)
 
-
-st.set_page_config(page_title="NTC — NAH to Cancer", page_icon="🎗️", layout="wide")
-if not render_login():
-    st.stop()
-st.html(CSS)
-
 PAGES = {
     "Analyse Image": (":material/upload:", page_analyse),
+    "Past Results": (":material/history:", page_history),
     "About": (":material/info:", page_about),
     "Model Information": (":material/bar_chart:", page_model),
     "Usage Guide": (":material/description:", page_usage),
@@ -899,4 +1067,5 @@ with st.sidebar:
         )
     st.html(sidebar_footer())
 
+user_bar()
 PAGES[ss.page][1]()
