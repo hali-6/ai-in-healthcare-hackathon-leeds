@@ -71,13 +71,14 @@ def main():
     for epoch in range(EPOCHS):
         model.train()
         total = 0
-        for x, y in train_dl:
+        for i, (x, y) in enumerate(train_dl, 1):
             x, y = x.to(device), y.to(device)
             optimizer.zero_grad()
             loss = criterion(model(x), y)
             loss.backward()
             optimizer.step()
             total += loss.item() * x.size(0)
+            print(i)
         scheduler.step()
 
         auc, sens, cm = evaluate()
