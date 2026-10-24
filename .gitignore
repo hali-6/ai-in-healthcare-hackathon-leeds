@@ -1,3 +1,11 @@
 env1/
 .DS_Store
 *.pth
+
+
+vault_master.key
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+.venv/
