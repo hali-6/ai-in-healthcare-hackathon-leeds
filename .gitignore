@@ -1,3 +1,19 @@
 env1/
 .DS_Store
 *.pth
+
+-----
+
+# Security
+vault_master.key
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# VS Code
+.vscode/

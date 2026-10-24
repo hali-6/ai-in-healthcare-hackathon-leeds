@@ -8,6 +8,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import database_aihack as db
+from login_page import render_login
+
 import streamlit as st
 from PIL import Image, ImageOps
 
@@ -856,7 +859,27 @@ def page_usage():
 # =============================================================================
 # App
 # =============================================================================
+
+# Initialise database
+db.init_db()
+
+# Configure Streamlit
+st.set_page_config(
+    page_title="NTC — NAH to Cancer",
+    page_icon="🔬"
+)
+
+# Require login
+if not render_login():
+    st.stop()
+
+# Load main interface
+st.html(CSS)
+
+
 st.set_page_config(page_title="NTC — NAH to Cancer", page_icon="🎗️", layout="wide")
+if not render_login():
+    st.stop()
 st.html(CSS)
 
 PAGES = {
