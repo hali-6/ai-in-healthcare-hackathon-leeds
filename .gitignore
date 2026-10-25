@@ -1,11 +1,24 @@
-env/
+# Operating system
 .DS_Store
+DS_Store
+
+# Model weights
 *.pth
+
+# Python environments
+env/
+venv/
+.venv/
 
 # Python cache
 __pycache__/
 *.pyc
 
-# Local database and encryption key
-melanoma_vault.db
+# Local databases and encryption
+*.db
+*.db-wal
+*.db-shm
 vault_master.key
+
+# VS Code settings
+.vscode/
