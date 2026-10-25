@@ -1,3 +1,11 @@
-env1/
+env/
 .DS_Store
 *.pth
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local database and encryption key
+melanoma_vault.db
+vault_master.key
