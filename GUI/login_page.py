@@ -1,8 +1,4 @@
-"""NTC research prototype Streamlit login component.
-
-Import render_login from GUI/gui_main.py. Does not call set_page_config,
-so it works inside an existing Streamlit app with its own navigation/sidebar.
-"""
+"""NTC login screen — presentation refresh; authentication unchanged."""
 import streamlit as st
 import database_aihack as db
 
@@ -14,69 +10,61 @@ def render_login() -> bool:
 
     st.markdown("""
     <style>
-      :root { --ntc-purple:#da69eb; --ntc-glow:#bd35df; --ntc-pale:#f5d8ff; }
-      [data-testid="stAppViewContainer"] {
-        background: radial-gradient(ellipse at 88% 8%,#261036 0%,transparent 42%),
-                    linear-gradient(125deg,#140c1d 0%,#100b18 100%);
-        color: #f9f4ff;
-      }
-      [data-testid="stHeader"] { background: transparent; }
-      [data-testid="stSidebar"] {
-        background: linear-gradient(170deg,#30163e,#1b1029 55%,#22122e);
-        border-right:1px solid #4b2b5e;
-      }
-      .block-container { max-width: 1250px; padding-top: 2.2rem; }
-      .ntc-eyebrow {font-size: .83rem; font-weight:700; letter-spacing:.28em; color:#f3a5fa;
-        border-bottom:1px solid #43234c; padding-bottom:14px; margin-bottom:28px; }
-      .ntc-title {font-size: clamp(2.5rem,5vw,4.3rem); letter-spacing:-.045em;
-        font-weight:800; line-height:1.07; margin-bottom:10px; }
-      .ntc-title span {color:#df70f1;}
-      .ntc-subtitle {font-size:1.15rem; color:#dfcbe9; margin-bottom:1.6rem; line-height:1.55;}
-      .ntc-panel-head {font-size:2rem; font-weight:750; margin-bottom:2px;}
-      .ntc-underline {width:48px;height:2px;background:#df70f1;margin:9px 0 20px;}
-      .ntc-muted {color:#d3bfdb; font-size:.96rem;}
-      .ntc-security {text-align:center; font-size:4rem; filter:drop-shadow(0 0 18px #ad33d9); padding:1rem 0;}
-      .ntc-security-title {font-size:1.55rem;font-weight:750;line-height:1.24;}
-      .ntc-security-text {color:#decde7;line-height:1.58;margin-top:13px;}
-      .ntc-feature {padding-top:18px; color:#e9d5ef; line-height:1.45;}
-      .ntc-feature strong {color:#fff;}
-      .ntc-disclaimer {border:1px solid #4e2a63;border-radius:12px;
-        background:#1e132a;padding:15px 18px;color:#d7c0e3;font-size:.8rem;margin-top:1rem;}
-      div[data-testid="stForm"] {border:1px solid #593068;background:#211329;
-        border-radius:16px;padding:24px 28px;}
-      div[data-testid="stTextInput"] input {background:#1b1224;color:#fff;
-        border:1px solid #634277;border-radius:9px;}
-      div[data-testid="stTextInput"] input:focus {border-color:#d96af0;
-        box-shadow:0 0 0 2px #9a38ae50;}
-      div[data-testid="stFormSubmitButton"] button {width:100%;border:none;
-        background:linear-gradient(100deg,#d71ce1,#9239e7);font-weight:750;
-        color:white;border-radius:10px;min-height:3.1rem;}
-      div[data-testid="stFormSubmitButton"] button:hover {color:white;
-        background:linear-gradient(100deg,#e14ef0,#ad55f3);border:none;}
-      .ntc-pill {display:inline-block;border:1px solid #71318b;color:#e3a3f4;
-        border-radius:22px;padding:7px 16px;font-size:.69rem;letter-spacing:.09em;}
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+      .stApp {background: radial-gradient(ellipse 65% 60% at 95% 5%,rgba(124,49,144,.20),transparent 70%), radial-gradient(ellipse 70% 80% at -10% 100%,rgba(75,34,110,.22),transparent 75%),#110b19;color:#f9f4ff;}
+      .stApp, .stApp p, .stApp label, .stApp button, .stApp input {font-family:'DM Sans','Segoe UI',sans-serif;}
+      [data-testid="stHeader"] {background:transparent;}
+      [data-testid="stSidebar"] {display:none;}
+      [data-testid="stMainBlockContainer"], .block-container {max-width:1190px;padding:3.5rem 3.2rem 3rem;}
+      .ntc-login-brand {display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid rgba(232,199,245,.14);padding:0 0 1.65rem;margin-bottom:3.6rem;}
+      .ntc-login-wordmark {font:800 1.75rem 'Manrope',sans-serif;letter-spacing:-.085em;color:#fff;}
+      .ntc-login-wordmark span {color:#e4a1e9;}
+      .ntc-login-brandname {font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:#c9b6d3;margin-left:1.1rem;}
+      .ntc-login-status {display:inline-flex;align-items:center;gap:.6rem;color:#e5d4ed;font-size:.69rem;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;}
+      .ntc-login-status:before {content:'';width:6px;height:6px;background:#d9a2df;border-radius:50%;box-shadow:0 0 12px rgba(217,162,223,.5);}
+      .ntc-login-kicker {font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:#e4a1e9;font-weight:700;margin-bottom:1.2rem;}
+      .ntc-login-title {font:700 clamp(2.7rem,5vw,4.7rem)/1.08 'Manrope',sans-serif;letter-spacing:-.065em;color:#fff;margin:0 0 1.3rem;}
+      .ntc-login-title em {font-style:normal;color:#e4a1e9;}
+      .ntc-login-sub {color:#cbbbd6;font-size:1.05rem;line-height:1.8;max-width:30rem;margin:0 0 2rem;}
+      .ntc-login-line {height:1px;width:75px;background:linear-gradient(90deg,#e4a1e9,transparent);margin:1.7rem 0 2rem;}
+      .ntc-login-value {display:flex;align-items:center;gap:1rem;color:#dfd1e7;font-size:.91rem;margin:1.15rem 0;}
+      .ntc-login-value-icon {width:36px;height:36px;display:grid;place-items:center;flex-shrink:0;border-radius:11px;background:rgba(220,161,234,.09);border:1px solid rgba(220,161,234,.2);color:#edb6f0;font-size:1rem;}
+      .ntc-login-form-title {font:700 1.7rem 'Manrope',sans-serif;letter-spacing:-.045em;color:#fff;margin:0 0 .55rem;}
+      .ntc-login-form-sub {font-size:.92rem;color:#c8b6d2;margin:0 0 1.45rem;line-height:1.6;}
+      .stApp div[data-testid="stForm"] {background:linear-gradient(150deg,rgba(48,29,61,.95),rgba(30,19,43,.98));border:1px solid rgba(228,161,233,.22);border-radius:22px;padding:2.25rem 2.3rem 2.15rem;box-shadow:0 30px 75px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.045);}
+      .stApp div[data-testid="stTextInput"] label p {font-size:.83rem;font-weight:600;color:#f2e8f7;letter-spacing:.02em;}
+      .stApp div[data-testid="stTextInput"] input {min-height:3.1rem;background:rgba(15,10,24,.68);color:#fff;border:1px solid rgba(216,175,230,.23);border-radius:10px;padding:0 .95rem;transition:border-color .2s,box-shadow .2s;}
+      .stApp div[data-testid="stTextInput"] input:focus {border-color:#e4a1e9;box-shadow:0 0 0 3px rgba(228,161,233,.12);}
+      .stApp div[data-testid="stFormSubmitButton"] button {width:100%;min-height:3.35rem;border-radius:11px;background:linear-gradient(110deg,#e6b0ea,#c885da);color:#25112e;border:0;font-weight:800;letter-spacing:.025em;box-shadow:0 12px 26px rgba(154,76,173,.2);transition:transform .2s,filter .2s,box-shadow .2s;}
+      .stApp div[data-testid="stFormSubmitButton"] button:hover {color:#25112e;border:0;filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 15px 30px rgba(154,76,173,.29);}
+      .ntc-login-caption {font-size:.79rem;color:#ad9cbb;line-height:1.65;margin-top:1.2rem;}
+      .ntc-login-footer {border-top:1px solid rgba(232,199,245,.13);padding-top:1.4rem;margin-top:3.5rem;display:flex;justify-content:space-between;gap:1.2rem;color:#a996b8;font-size:.78rem;line-height:1.6;}
+      .ntc-login-footer strong {color:#e4c8ec;font-weight:600;}
+      @media(max-width:850px) {[data-testid="stMainBlockContainer"],.block-container{padding:2.5rem 1.2rem 2rem;}.ntc-login-brand{margin-bottom:2.3rem}.ntc-login-brandname{display:none}.ntc-login-footer{display:block}.stApp div[data-testid="stForm"]{padding:1.6rem 1.25rem}}
     </style>
     """, unsafe_allow_html=True)
 
-    header_left, header_right = st.columns([4, 1.4])
-    with header_left:
-        st.markdown('<div class="ntc-eyebrow">ACCOUNT ACCESS</div>', unsafe_allow_html=True)
-    with header_right:
-        st.markdown('<div class="ntc-pill">⚗ RESEARCH PROTOTYPE</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="ntc-login-brand"><div><span class="ntc-login-wordmark">NT<span>C</span></span><span class="ntc-login-brandname">NAH TO CANCER</span></div><span class="ntc-login-status">Research prototype</span></div>""", unsafe_allow_html=True)
 
-    st.markdown('<div class="ntc-title">Welcome <span>Back</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="ntc-subtitle">Sign in to access your scan history and saved results.</div>', unsafe_allow_html=True)
+    intro_col, form_col = st.columns([1.05, 1], gap="large", vertical_alignment="center")
+    with intro_col:
+        st.markdown("""
+        <div class="ntc-login-kicker">EARLY DETECTION · BRIGHTER TOMORROWS</div>
+        <h1 class="ntc-login-title">Welcome<br><em>back.</em></h1>
+        <p class="ntc-login-sub">A thoughtful approach to skin lesion analysis. Sign in to explore your scans and revisit saved results.</p>
+        <div class="ntc-login-line"></div>
+        <div class="ntc-login-value"><span class="ntc-login-value-icon">✧</span><span>Purpose-built for research and awareness</span></div>
+        <div class="ntc-login-value"><span class="ntc-login-value-icon">▣</span><span>Your previous analyses in one place</span></div>
+        <div class="ntc-login-value"><span class="ntc-login-value-icon">◇</span><span>Carefully handled account and image data</span></div>
+        """, unsafe_allow_html=True)
 
-    login_col, privacy_col = st.columns([1.2, 1], gap="large")
-    with login_col:
+    with form_col:
         with st.form("ntc_login_form", clear_on_submit=False):
-            st.markdown('<div class="ntc-panel-head">Sign In</div><div class="ntc-underline"></div>'
-                        '<div class="ntc-muted">Enter your credentials to access your NTC account.</div>',
-                        unsafe_allow_html=True)
+            st.markdown('<div class="ntc-login-form-title">Account sign in</div><p class="ntc-login-form-sub">Enter your details to continue to NTC.</p>', unsafe_allow_html=True)
+            username = st.text_input("Username", placeholder="Your username", key="ntc_login_username")
+            password = st.text_input("Password", type="password", placeholder="Your password", key="ntc_login_password")
             st.write("")
-            username = st.text_input("Username", placeholder="Enter your username", key="ntc_login_username")
-            password = st.text_input("Password", type="password", placeholder="Enter your password", key="ntc_login_password")
-            submitted = st.form_submit_button("↪  Sign In", use_container_width=True)
+            submitted = st.form_submit_button("Sign in  →", use_container_width=True)
 
         if submitted:
             if not username.strip() or not password:
@@ -95,19 +83,9 @@ def render_login() -> bool:
                         st.session_state["username"] = user["username"]
                         st.session_state["role"] = user["role"]
                         st.rerun()
-        st.caption("Need an account? Ask the team to enable registration. Password recovery is not implemented yet.")
+        st.markdown('<div class="ntc-login-caption">Need an account? Ask the team to enable registration.<br>Password recovery is not available in this prototype.</div>', unsafe_allow_html=True)
 
-    with privacy_col:
-        with st.container(border=True):
-            st.markdown('<div class="ntc-security">♜</div>', unsafe_allow_html=True)
-            st.markdown('<div class="ntc-security-title">Your account and scan data deserve protection</div>', unsafe_allow_html=True)
-            st.markdown('<div class="ntc-security-text">NTC uses hashed passwords and encrypts uploaded image data in its local database. This prototype is not approved for real patient data.</div>', unsafe_allow_html=True)
-            st.divider()
-            st.markdown('<div class="ntc-feature">🛡️ &nbsp; <strong>Protected accounts</strong><br>Passwords are checked against salted hashes.</div>', unsafe_allow_html=True)
-            st.markdown('<div class="ntc-feature">🗂️ &nbsp; <strong>Scan history</strong><br>Records are associated with a unique user ID.</div>', unsafe_allow_html=True)
-            st.markdown('<div class="ntc-feature">🔒 &nbsp; <strong>Encrypted image storage</strong><br>Images are encrypted before being stored.</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="ntc-disclaimer">ⓘ NTC is a research and educational prototype, not a clinically validated diagnostic tool. Do not use it to make medical decisions.</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="ntc-login-footer"><span><strong>NTC · NAH to Cancer</strong> &nbsp; / &nbsp; Early Detection. Brighter Tomorrows.</span><span>Research and educational prototype only. Not a medical diagnosis or a clinically validated tool. Do not use for medical decisions.</span></div>""", unsafe_allow_html=True)
     return False
 
 

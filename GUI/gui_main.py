@@ -476,6 +476,178 @@ html, body, .stApp, .stApp p, .stApp span, .stApp div, .stApp button, .stApp li 
   .ntc-vrule { display: none; }
   .ntc-head-side { align-items: flex-start; }
 }
+
+/* ===============================================================
+   NTC ATELIER · V3 — visually distinctive premium main interface
+   Presentation-only overrides. No application logic changed.
+   =============================================================== */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+  --bg: #0e0816;
+  --card: rgba(33, 19, 46, .79);
+  --card-2: rgba(45, 25, 58, .76);
+  --line: rgba(231, 194, 241, .19);
+  --line-2: rgba(243, 196, 244, .42);
+  --pink: #e9a2e8;
+  --pink-2: #f8d6f2;
+  --violet: #b48adb;
+  --lav: #d6bee8;
+  --text: #fcf8ff;
+  --muted: #c6b5d1;
+  --font: 'DM Sans', 'Segoe UI', sans-serif;
+  --display: 'Playfair Display', Georgia, serif;
+}
+.stApp {
+  background:
+    radial-gradient(ellipse 880px 530px at 82% 2%, rgba(164, 89, 177, .24), transparent 67%),
+    radial-gradient(ellipse 700px 600px at 24% 80%, rgba(95, 46, 135, .15), transparent 75%),
+    linear-gradient(135deg, #100918 0%, #170d24 45%, #0c0914 100%);
+}
+[data-testid="stMainBlockContainer"], .block-container {
+  max-width: 1480px;
+  padding: 2.6rem 3rem 4rem;
+}
+[data-testid="stMain"] { position: relative; }
+[data-testid="stMain"]::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #a968ba 24%, #f9e2ee 51%, #a968ba 78%, transparent);
+  opacity: .78; pointer-events: none;
+}
+[data-testid="stSidebar"] {
+  background: linear-gradient(155deg, #321c42 0%, #24132f 48%, #150e21 100%);
+  border-right: 1px solid rgba(243, 211, 239, .24);
+  box-shadow: 16px 0 48px rgba(0,0,0,.18);
+}
+.ntc-logo { padding-top: 1rem; padding-bottom: 1.8rem; }
+.ntc-logo .big {
+  font-family: 'Manrope', sans-serif; font-size: 3.65rem; font-weight: 800;
+  letter-spacing: -.085em; text-shadow: 0 8px 28px rgba(232, 163, 230, .15);
+}
+.ntc-logo .big span {
+  background: linear-gradient(125deg, #fff8fd 8%, #f1b7e9 38%, #9d65bf 75%, #ffeaf8);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.ntc-logo .name { font-size: 1.42rem; letter-spacing: -.03em; font-weight: 600; }
+.ntc-logo .name span { color: #efb5e6; }
+.ntc-logo p { letter-spacing: .025em; line-height: 1.65; font-size: .91rem; }
+[data-testid="stSidebar"] .stButton button {
+  border-radius: 13px; margin: .12rem 0;
+  padding: .9rem 1rem; font-size: .95rem; font-weight: 500;
+  transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+[data-testid="stSidebar"] .stButton button p { font-size: .96rem; }
+[data-testid="stSidebar"] .stButton button:hover {
+  background: rgba(245, 210, 241, .09);
+  transform: translateX(3px);
+}
+[data-testid="stSidebar"] .stButton button[kind="primary"] {
+  background: linear-gradient(105deg, rgba(231, 173, 225, .23), rgba(120, 70, 143, .25));
+  border: 1px solid rgba(248, 217, 245, .48);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 9px 25px rgba(0,0,0,.16);
+}
+.ntc-head {
+  position: relative; overflow: hidden; isolation: isolate;
+  align-items: center; min-height: 225px;
+  padding: 2rem 2.3rem 2.1rem; margin: 0 0 1.65rem;
+  border: 1px solid rgba(246, 214, 241, .28);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 88% 5%, rgba(249, 215, 245, .17), transparent 43%),
+    linear-gradient(118deg, rgba(73, 39, 91, .93), rgba(33, 20, 48, .92) 58%, rgba(63, 32, 75, .79));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 26px 68px rgba(0,0,0,.24);
+}
+.ntc-head::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(113deg, transparent 30%, rgba(255,255,255,.025) 43%, rgba(255,235,250,.11) 49%, rgba(255,255,255,.025) 54%, transparent 70%);
+}
+.ntc-head::after {
+  content: ""; position: absolute; left: 2.3rem; bottom: 0; height: 2px; width: 34%;
+  background: linear-gradient(90deg, #f9e3f2, #d89cdd 50%, transparent);
+}
+.ntc-kicker {
+  font-size: .69rem; letter-spacing: .32em; font-weight: 700; color: #f4c8e9;
+}
+.ntc-title {
+  font-family: var(--display) !important; font-weight: 600;
+  font-size: clamp(2.65rem, 4.5vw, 4.65rem);
+  letter-spacing: -.055em; line-height: 1.12; margin: .85rem 0 .8rem;
+  text-wrap: balance;
+}
+.ntc-title em {
+  background: linear-gradient(110deg, #fff2fa, #edb7e5 46%, #c48fdf 85%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.ntc-sub { font-size: 1.06rem; line-height: 1.75; color: #e5d5ec; max-width: 43rem; }
+.ntc-head-side { align-self: stretch; justify-content: space-between; padding: .1rem 0 .5rem; gap: 1.2rem; }
+.ntc-pill {
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,233,250,.32);
+  color: #f5d4ec; letter-spacing: .17em; font-weight: 600; font-size: .66rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+}
+.ntc-script { font-size: 1.95rem; color: #f4c4e9; transform: rotate(-5deg); padding-top: .8rem; }
+.ntc-card,
+.st-key-card_drop, .st-key-card_examples, .st-key-card_image, .st-key-card_results {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), transparent 38%),
+    linear-gradient(135deg, rgba(42,26,57,.89), rgba(24,17,35,.9));
+  border: 1px solid rgba(243, 213, 241, .21);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.065), 0 18px 45px rgba(0,0,0,.19);
+  padding: 1.6rem 1.75rem;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.ntc-card:hover,
+.st-key-card_drop:hover, .st-key-card_examples:hover,
+.st-key-card_image:hover, .st-key-card_results:hover {
+  border-color: rgba(243, 213, 241, .37);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.085), 0 23px 55px rgba(0,0,0,.23);
+}
+.ntc-h2 { font-family: var(--display) !important; font-weight: 600; font-size: 1.85rem; letter-spacing: -.035em; }
+.ntc-card-title { font-size: 1.12rem; letter-spacing: -.02em; }
+.ntc-h2::after { width: 3.2rem; background: linear-gradient(90deg, #fff0fa, #bc78cf); }
+.ntc-orb {
+  width: 60px; height: 60px; border-radius: 18px;
+  border: 1px solid rgba(245, 207, 242, .22);
+  background: linear-gradient(145deg, rgba(244, 192, 238, .18), rgba(93, 51, 116, .35));
+  color: #f2c8eb; box-shadow: inset 0 1px 0 rgba(255,255,255,.11);
+}
+.ntc-orb.sm { width: 48px; height: 48px; border-radius: 15px; }
+.ntc-feature { gap: 1.15rem; }
+.ntc-feature h4 { letter-spacing: -.025em; }
+.ntc-feature p { line-height: 1.65; }
+.ntc-grid { gap: 1.35rem; }
+.ntc-pred { border-radius: 16px; }
+.st-key-userbar {
+  border-radius: 14px; border-color: rgba(243,213,241,.19);
+  background: rgba(39,24,52,.65);
+}
+[data-testid="stFileUploaderDropzone"] {
+  border-radius: 18px; border-color: rgba(244,196,236,.4);
+  background: linear-gradient(145deg, rgba(52,32,69,.6), rgba(20,14,31,.75));
+}
+[data-testid="stFileUploaderDropzone"] button {
+  background: linear-gradient(115deg, #f4c9ed, #c28fd9);
+  color: #24132f; box-shadow: 0 9px 26px rgba(192,124,204,.19);
+}
+[data-testid="stFileUploaderDropzone"] button:hover { color: #24132f; filter: brightness(1.08); }
+.ntc-steps li::before { background: linear-gradient(135deg, #f6d7ef, #bd8cdb); }
+@media (max-width: 1100px) {
+  [data-testid="stMainBlockContainer"], .block-container { padding: 1.7rem 1.4rem 3rem; }
+  .ntc-head { padding: 1.6rem; }
+  .ntc-head-side { align-items: flex-start; }
+  .ntc-script { transform: none; }
+}
+@media (max-width: 650px) {
+  .ntc-head { min-height: auto; border-radius: 17px; }
+  .ntc-title { font-size: 2.65rem; }
+  .ntc-card { padding: 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ntc-card, [data-testid="stSidebar"] .stButton button { transition: none; }
+}
+
 </style>
 """
 
