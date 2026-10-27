@@ -120,6 +120,6 @@ Built by a team of four students at the AI in Healthcare Hackathon, Leeds.
 | **Hashim Ali** | [@hali-6](https://github.com/hali-6) |
 | **Natasha Chisvo** | [@Natasha-Chisvo](https://github.com/Natasha-Chisvo) |
 | **Neil Suresh** | [@Neil-Suresh](https://github.com/Neil-Suresh) |
-| **Mahyan Qadri** | [@MAhyanqadri](https://github.com/MAhyanqadri) |
+| **Ahyan Qadri** | [@MAhyanqadri](https://github.com/MAhyanqadri) |
 
 *Four minds. One mission. NAH to Cancer.*
